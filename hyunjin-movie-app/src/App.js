@@ -1,54 +1,58 @@
-import React, { Component } from 'react';
-// import PropTypes from 'prop-types'
-import './App.css';
-import Movie from './Movie'
-
-	const movies = [
-		{
-
-			title: "matrix",
-			poster: "https://upload.wikimedia.org/wikipedia/en/thumb/c/c1/The_Matrix_Poster.jpg/220px-The_Matrix_Poster.jpg"
-		},
-        {
-            title: "Full Metal Jacket",
-            poster: "https://resizing.flixster.com/LtoVIF3TxiP3c9wtzPscteMXqG4=/206x305/v1.bTsxMTE2ODAyOTtqOzE3Njc5OzEyMDA7ODAwOzEyMDA"
-        },
-        {
-            title: "Oldboy",
-            poster: "https://upload.wikimedia.org/wikipedia/en/thumb/6/67/Oldboykoreanposter.jpg/220px-Oldboykoreanposter.jpg"
-        },
-        {
-            title: "Star Wars",
-            poster: "https://lumiere-a.akamaihd.net/v1/images/the-last-jedi-theatrical-poster-film-page_bca06283.jpeg?region=0%2C0%2C480%2C711"
-        },
-	]
+import React, { Component } from "react";
+import "./App.css";
+import Movie from "./Movie";
 
 class App extends Component {
+    // Render: componentWillMount() -> render() -> componentDidMount()
+    // Update componentWillReceiveProps() -> shouldComponentUpdate() -> componentWillUpdate() -> render() -> componentDidUpdate()
 
-	// static propTypes = {
-		// title: React.propTypes.string,
-		// poster: React.propTypes.string
-	// }
-	componentDidMount(){
-		setTimeout(() => {
-			this.setState({
-				greeting: 'hello again!'
-			})
-		}, 5000)
-	}
-	state = {
-		greeting: 'hello!'
-	}
-	render() {
-		return (
-			<div className="App">
-				{this.state.greeting}
-				{movies.map((movie, index) => {
-					return <Movie title={movie.title} poster={movie.poster} key={index}/>
-				})}
+    state = {};
+
+    componentDidMount() {
+        this._getMovies();
+    }
+
+    _getMovies = async () => {
+        const movies = await this._callApi();
+        this.setState({
+            movies
+        })
+    };
+
+
+    /* API */
+
+    _callApi = () => {
+        return fetch("https://api.themoviedb.org/3/movie/popular?api_key=c2892e87c752c29c1ed8c8fae846f0a7")
+            .then(response => response.json())
+            .then(json => json.results)
+            .catch(err => console.log(err));
+    };
+
+    _renderMovies = () => {
+        const movies = this.state.movies.map(movie => {
+            return (
+                <Movie
+                    title={movie.title}
+                    poster={'https://image.tmdb.org/t/p/w500'+ movie.poster_path}
+                    key={movie.id}
+                    genres={movie.genre_ids}
+                    overview={movie.overview}
+                />
+            );
+        });
+        return movies;
+    };
+
+    render() {
+        const { movies } = this.state;
+        console.log(movies)
+        return (
+			<div className={movies ? "App" : "App--loading"}>
+                {movies ? this._renderMovies() : "Loading"}
 			</div>
-		);
-	}
+        );
+    }
 }
 
 export default App;
